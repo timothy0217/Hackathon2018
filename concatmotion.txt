@@ -1,0 +1,42 @@
+#include "application.h"
+#include "cellular_hal.h"
+// Set the TELUS APN
+STARTUP(cellular_credentials_set("isp.telus.com", "", "", NULL));
+
+
+//Uncommnent the following line to work in offline mode
+//SYSTEM_MODE(MANUAL);
+
+int led = D7; // we will use D7 LED to monitor sensor activity
+int led2 = D6;
+int pir = D0; //connect the PIR output to pin D0 of the Electron
+int motionstatus = 0; 
+
+
+void setup() {
+    pinMode(D0, INPUT_PULLDOWN);
+    pinMode(D7,OUTPUT);
+    pinMode(D6,OUTPUT);
+    
+    Particle.variable("motionstatus", &motionstatus, INT);
+}
+
+void loop() {
+    if (digitalRead(D0) == HIGH) {
+      digitalWrite(D7,HIGH); //show the activity of the sensor with the onboard D7 LED
+      digitalWrite(D6,LOW);
+      Particle.publish("motion","high",60); //publish an event 
+      motionstatus = 1;
+      delay(5000);
+        while (digitalRead(D0) == HIGH); // wait for the sensor to return back to normal
+    }
+    else
+    {
+    digitalWrite(D6,HIGH);
+    digitalWrite(D7,LOW);
+    Particle.publish("motion","low",20); //publish an event 
+    motionstatus = 0;
+
+    }
+    
+}
